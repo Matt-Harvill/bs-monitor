@@ -11,4 +11,13 @@ wheels/
 
 # Data
 data/
-figures/
+
+# Figures
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tiff
+*.ico
+*.webp
