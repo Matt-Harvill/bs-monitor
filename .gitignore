@@ -21,3 +21,6 @@ data/
 *.tiff
 *.ico
 *.webp
+
+# Outputs
+outputs/
