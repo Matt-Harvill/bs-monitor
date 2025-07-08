@@ -24,3 +24,6 @@ data/
 
 # Outputs
 outputs/
+
+# wandb
+wandb/

@@ -3,6 +3,7 @@ import logging
 import math
 import os
 import pickle
+from datetime import datetime
 from pathlib import Path
 
 import librosa
@@ -14,6 +15,11 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 from transformers import Wav2Vec2ForAudioFrameClassification
+
+import wandb
+from src.train.hubert_for_audio_frame_classification import (
+    HubertForAudioFrameClassification,
+)
 
 
 def setup_logging(log_level="INFO"):
@@ -42,8 +48,9 @@ class BowelSoundDataset(Dataset):
         self.max_length = max_length
         self.sample_rate = sample_rate
 
-        # Wav2Vec2 parameters
-        self.frame_rate = 49.5  # Hz (Wav2Vec2 large output frequency)
+        # Determine frame rate based on model
+        self.frame_rate = 49.5  # Hz (output frequency for all models)
+
         self.stride_ms = 20  # ms between samples
         self.receptive_field_ms = 25  # ms receptive field
 
@@ -312,7 +319,7 @@ class BowelSoundDataset(Dataset):
 
 def create_dataloaders(
     data_dir, batch_size=8, num_workers=4
-) -> tuple[DataLoader[BowelSoundDataset], DataLoader[BowelSoundDataset]]:
+) -> tuple[DataLoader[BowelSoundDataset], DataLoader[BowelSoundDataset], dict, dict]:
     """Create train and validation dataloaders"""
     train_dataset: BowelSoundDataset = BowelSoundDataset(data_dir, split="train")
     test_dataset: BowelSoundDataset = BowelSoundDataset(data_dir, split="test")
@@ -333,11 +340,61 @@ def create_dataloaders(
         pin_memory=True,
     )
 
-    return train_loader, test_loader
+    # Calculate dataset statistics
+    train_stats = _calculate_dataset_stats(train_dataset)
+    test_stats = _calculate_dataset_stats(test_dataset)
+
+    return train_loader, test_loader, train_stats, test_stats
+
+
+def _calculate_dataset_stats(dataset: BowelSoundDataset) -> dict:
+    """Calculate statistics for a dataset"""
+    total_frames = sum(len(item["labels"]) for item in dataset.processed_data)
+    total_bowel_frames = sum(
+        (item["labels"] == 1).sum() for item in dataset.processed_data
+    )
+
+    return {
+        "total_files": len(dataset.files),
+        "total_chunks": len(dataset.processed_data),
+        "total_frames": total_frames,
+        "total_bowel_frames": total_bowel_frames,
+        "bowel_sound_ratio": 100 * total_bowel_frames / total_frames
+        if total_frames > 0
+        else 0,
+    }
+
+
+def cleanup_old_checkpoints(output_dir: str, keep_last: int = 5):
+    """Clean up old checkpoint files, keeping only the most recent ones"""
+    output_path = Path(output_dir)
+    checkpoint_files = list(output_path.glob("checkpoint_*.pt"))
+
+    if len(checkpoint_files) <= keep_last:
+        return
+
+    # Sort by modification time (most recent first)
+    checkpoint_files.sort(key=lambda x: x.stat().st_mtime, reverse=True)
+
+    # Remove old checkpoints
+    for old_checkpoint in checkpoint_files[keep_last:]:
+        try:
+            old_checkpoint.unlink()
+            print(f"Removed old checkpoint: {old_checkpoint.name}")
+        except Exception as e:
+            print(f"Failed to remove {old_checkpoint.name}: {e}")
 
 
 def train_epoch(
-    model, train_loader, optimizer, criterion, device, epoch=None, logger=None
+    model,
+    train_loader,
+    optimizer,
+    criterion,
+    device,
+    epoch=None,
+    logger=None,
+    global_step=0,
+    wandb_available=False,
 ):
     """Train for one epoch"""
     if logger is None:
@@ -420,6 +477,17 @@ def train_epoch(
 
         total_loss += loss.item()
         step_losses.append(loss.item())  # Store step loss
+
+        # Log step metrics to wandb
+        current_step = global_step + progress_bar.n
+        if wandb_available:
+            wandb.log(
+                {
+                    "train/step_loss": loss.item(),
+                    "train/step_accuracy": correct_predictions / total_predictions,
+                    "train/step": current_step,
+                }
+            )
 
         # Update progress bar
         progress_bar.set_postfix(
@@ -579,11 +647,70 @@ def main() -> None:
         choices=["DEBUG", "INFO", "WARNING", "ERROR"],
         help="Logging level (default: INFO)",
     )
+    parser.add_argument(
+        "--wandb_project",
+        type=str,
+        default="bowel-sound-monitor",
+        help="Weights & Biases project name",
+    )
+    parser.add_argument(
+        "--wandb_run_name",
+        type=str,
+        default=None,
+        help="Weights & Biases run name (optional)",
+    )
+    parser.add_argument(
+        "--model",
+        type=str,
+        default="facebook/wav2vec2-large",
+        choices=[
+            "facebook/wav2vec2-large",
+            "facebook/wav2vec2-base",
+            "facebook/hubert-xlarge-ll60k",
+        ],
+        help="Audio model to use for training",
+    )
+    parser.add_argument(
+        "--resume_from",
+        type=str,
+        default=None,
+        help="Path to checkpoint file to resume training from",
+    )
+    parser.add_argument(
+        "--keep_checkpoints",
+        type=int,
+        default=5,
+        help="Number of recent checkpoints to keep (default: 5)",
+    )
 
     args = parser.parse_args()
 
     # Setup logging
     logger = setup_logging(args.log_level)
+
+    # Initialize wandb
+    try:
+        wandb.init(
+            project=args.wandb_project,
+            name=args.wandb_run_name,
+            config={
+                "data_dir": args.data_dir,
+                "batch_size": args.batch_size,
+                "learning_rate": args.learning_rate,
+                "num_epochs": args.num_epochs,
+                "max_length": args.max_length,
+                "num_workers": args.num_workers,
+                "eval_steps": args.eval_steps,
+                "model": args.model,
+                "num_labels": 2,
+            },
+        )
+        logger.info("Weights & Biases logging initialized")
+        wandb_available = True
+    except Exception as e:
+        logger.warning(f"Failed to initialize Weights & Biases: {e}")
+        logger.warning("Continuing without wandb logging")
+        wandb_available = False
 
     # Create output directory
     os.makedirs(args.output_dir, exist_ok=True)
@@ -594,12 +721,33 @@ def main() -> None:
 
     # Create dataloaders
     logger.info("Creating dataloaders...")
-    train_loader, test_loader = create_dataloaders(
+    train_loader, test_loader, train_stats, test_stats = create_dataloaders(
         args.data_dir, batch_size=args.batch_size, num_workers=args.num_workers
     )
 
     logger.info(f"Train samples: {len(train_loader.dataset)}")  # type: ignore
     logger.info(f"Test samples: {len(test_loader.dataset)}")  # type: ignore
+    logger.info(f"Using frame rate: {train_loader.dataset.frame_rate} Hz")  # type: ignore
+
+    # Log dataset statistics to wandb
+    if wandb_available:
+        wandb.log(
+            {
+                "dataset/train_samples": len(train_loader.dataset),  # type: ignore
+                "dataset/test_samples": len(test_loader.dataset),  # type: ignore
+                "dataset/train_files": train_stats["total_files"],
+                "dataset/train_chunks": train_stats["total_chunks"],
+                "dataset/train_frames": train_stats["total_frames"],
+                "dataset/train_bowel_frames": train_stats["total_bowel_frames"],
+                "dataset/train_bowel_ratio": train_stats["bowel_sound_ratio"],
+                "dataset/test_files": test_stats["total_files"],
+                "dataset/test_chunks": test_stats["total_chunks"],
+                "dataset/test_frames": test_stats["total_frames"],
+                "dataset/test_bowel_frames": test_stats["total_bowel_frames"],
+                "dataset/test_bowel_ratio": test_stats["bowel_sound_ratio"],
+                "dataset/frame_rate": train_loader.dataset.frame_rate,  # type: ignore
+            }
+        )
 
     # Show sample data from first batch
     logger.debug("Sample data from first training batch:")
@@ -625,15 +773,27 @@ def main() -> None:
     logger.debug(f"  - Files in batch: {sample_batch['filename']}")
 
     # Initialize model
-    logger.info("Initializing model...")
-    model = Wav2Vec2ForAudioFrameClassification.from_pretrained(
-        "facebook/wav2vec2-large",
-        num_labels=2,  # 0 = no bowel sound, 1 = bowel sound
-    )
+    logger.info(f"Initializing model: {args.model}")
 
-    # Freeze feature encoder
-    model.freeze_feature_encoder()
-    logger.info("Feature encoder frozen")
+    # Determine the appropriate model class based on the model name
+    if "hubert" in args.model.lower():
+        model = HubertForAudioFrameClassification.from_pretrained(
+            args.model,
+            num_labels=2,  # 0 = no bowel sound, 1 = bowel sound
+        )
+    else:
+        # For wav2vec2 models, use the frame classification head
+        model = Wav2Vec2ForAudioFrameClassification.from_pretrained(
+            args.model,
+            num_labels=2,  # 0 = no bowel sound, 1 = bowel sound
+        )
+
+    # Freeze feature encoder (only for models that support it)
+    if hasattr(model, "freeze_feature_encoder"):
+        model.freeze_feature_encoder()
+        logger.info("Feature encoder frozen")
+    else:
+        logger.info("Feature encoder freezing not supported for this model")
 
     # Debug: Check which parameters are trainable
     logger.debug("Parameter training status:")
@@ -659,6 +819,17 @@ def main() -> None:
         f"  - Frozen parameters: {frozen_params:,} ({100 * frozen_params / total_params:.1f}%)"
     )
 
+    # Log model parameters to wandb
+    if wandb_available:
+        wandb.log(
+            {
+                "model/total_parameters": total_params,
+                "model/trainable_parameters": trainable_params,
+                "model/frozen_parameters": frozen_params,
+                "model/trainable_percentage": 100 * trainable_params / total_params,
+            }
+        )
+
     # Move model to device
     model = model.to(device)  # type: ignore
 
@@ -679,18 +850,82 @@ def main() -> None:
     optimizer = optim.AdamW(model.parameters(), lr=args.learning_rate)
     criterion = nn.CrossEntropyLoss()
 
+    # Initialize training state variables
+    start_epoch = 0
+    global_step = 0
+    best_acc = 0.0
+    all_step_losses = []
+
+    # Resume from checkpoint if specified
+    if args.resume_from:
+        if os.path.exists(args.resume_from):
+            logger.info(f"Resuming from checkpoint: {args.resume_from}")
+            checkpoint = torch.load(args.resume_from, map_location=device)
+
+            # Load model state
+            model.load_state_dict(checkpoint["model_state_dict"])
+
+            # Load optimizer state
+            optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+
+            # Load training state
+            start_epoch = checkpoint["epoch"] + 1
+            global_step = checkpoint["global_step"]
+            best_acc = checkpoint["best_acc"]
+            all_step_losses = checkpoint.get("step_losses", [])
+
+            logger.info(f"Resumed from epoch {checkpoint['epoch']}, step {global_step}")
+            logger.info(f"Best accuracy so far: {best_acc:.4f}")
+
+            # Show checkpoint metadata if available
+            if "timestamp" in checkpoint:
+                logger.info(f"Checkpoint timestamp: {checkpoint['timestamp']}")
+            if "model_name" in checkpoint:
+                logger.info(f"Checkpoint model: {checkpoint['model_name']}")
+            if "learning_rate" in checkpoint:
+                logger.info(f"Checkpoint learning rate: {checkpoint['learning_rate']}")
+
+            # Log resume info to wandb
+            if wandb_available:
+                wandb.log(
+                    {
+                        "training/resumed_from": args.resume_from,
+                        "training/resume_epoch": checkpoint["epoch"],
+                        "training/resume_step": global_step,
+                        "training/resume_best_acc": best_acc,
+                    }
+                )
+        else:
+            logger.warning(f"Checkpoint file not found: {args.resume_from}")
+            logger.warning("Starting training from scratch")
+
+    # Log optimizer and criterion info to wandb
+    if wandb_available:
+        wandb.log(
+            {
+                "training/optimizer": "AdamW",
+                "training/learning_rate": args.learning_rate,
+                "training/criterion": "CrossEntropyLoss",
+            }
+        )
+
     # Training loop
     logger.info("Starting training...")
-    best_acc = 0.0
-    global_step = 0
-    all_step_losses = []  # Track all step losses across epochs
 
-    for epoch in range(args.num_epochs):
+    for epoch in range(start_epoch, args.num_epochs):
         logger.info(f"Epoch {epoch + 1}/{args.num_epochs}")
 
         # Train
         train_loss, train_acc, step_losses = train_epoch(
-            model, train_loader, optimizer, criterion, device, epoch, logger
+            model,
+            train_loader,
+            optimizer,
+            criterion,
+            device,
+            epoch,
+            logger,
+            global_step,
+            wandb_available,
         )
 
         # Log step losses for this epoch
@@ -707,6 +942,15 @@ def main() -> None:
                 logger.info(
                     f"Step {global_step} - Eval Loss: {eval_loss:.4f}, Eval Acc: {eval_acc:.4f}"
                 )
+                # Log evaluation metrics to wandb
+                if wandb_available:
+                    wandb.log(
+                        {
+                            "eval/step_loss": eval_loss,
+                            "eval/step_accuracy": eval_acc,
+                            "eval/step": global_step,
+                        }
+                    )
 
         # Full evaluation at end of epoch
         test_loss, test_acc = evaluate(model, test_loader, criterion, device)
@@ -715,13 +959,29 @@ def main() -> None:
         logger.info(f"  Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.4f}")
         logger.info(f"  Test Loss: {test_loss:.4f}, Test Acc: {test_acc:.4f}")
 
+        # Log epoch metrics to wandb
+        if wandb_available:
+            wandb.log(
+                {
+                    "epoch": epoch + 1,
+                    "train/epoch_loss": train_loss,
+                    "train/epoch_accuracy": train_acc,
+                    "eval/epoch_loss": test_loss,
+                    "eval/epoch_accuracy": test_acc,
+                }
+            )
+
         # Save best model
         if test_acc > best_acc:
             best_acc = test_acc
             model.save_pretrained(os.path.join(args.output_dir, "best_model"))
             logger.info(f"New best model saved with accuracy: {best_acc:.4f}")
+            # Log new best accuracy to wandb
+            if wandb_available:
+                wandb.log({"best_accuracy": best_acc})
 
-        # Save checkpoint
+        # Save checkpoint with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         checkpoint = {
             "epoch": epoch,
             "global_step": global_step,
@@ -733,11 +993,33 @@ def main() -> None:
             "test_acc": test_acc,
             "best_acc": best_acc,
             "step_losses": all_step_losses,
+            "timestamp": datetime.now().isoformat(),
+            "model_name": args.model,
+            "learning_rate": args.learning_rate,
+            "batch_size": args.batch_size,
         }
-        torch.save(checkpoint, os.path.join(args.output_dir, "checkpoint.pt"))
+        checkpoint_filename = (
+            f"checkpoint_epoch{epoch+1}_step{global_step}_{timestamp}.pt"
+        )
+        checkpoint_path = os.path.join(args.output_dir, checkpoint_filename)
+        torch.save(checkpoint, checkpoint_path)
+        logger.info(f"Checkpoint saved: {checkpoint_filename}")
+
+        # Clean up old checkpoints
+        cleanup_old_checkpoints(args.output_dir, keep_last=args.keep_checkpoints)
 
     logger.info(f"Training completed! Best accuracy: {best_acc:.4f}")
     logger.info(f"Model saved to: {args.output_dir}")
+
+    # Log final training summary to wandb
+    if wandb_available:
+        wandb.log(
+            {
+                "training/final_best_accuracy": best_acc,
+                "training/total_steps": global_step,
+                "training/total_epochs": args.num_epochs,
+            }
+        )
 
     # Save training history
     training_history = {
@@ -747,6 +1029,10 @@ def main() -> None:
     }
     torch.save(training_history, os.path.join(args.output_dir, "training_history.pt"))
     logger.info(f"Training history saved to: {args.output_dir}/training_history.pt")
+
+    # Finish wandb run
+    if wandb_available:
+        wandb.finish()
 
 
 if __name__ == "__main__":
