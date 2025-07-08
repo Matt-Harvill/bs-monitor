@@ -376,47 +376,15 @@ def _calculate_dataset_stats(dataset: BowelSoundDataset) -> dict:
     }
 
 
-def cleanup_old_checkpoints(checkpoint_dir: str, keep_best: int = 2):
-    """Clean up old checkpoint files, keeping only the best ones based on eval accuracy"""
+def cleanup_checkpoints(checkpoint_dir: str):
+    """Remove all checkpoint files in the directory"""
     checkpoint_path = Path(checkpoint_dir)
-    checkpoint_files = list(checkpoint_path.glob("checkpoint_*.pt"))
-
-    if len(checkpoint_files) <= keep_best:
-        return
-
-    # Load checkpoint metadata to get eval accuracy
-    checkpoint_info = []
-    for checkpoint_file in checkpoint_files:
-        try:
-            checkpoint = torch.load(checkpoint_file, map_location="cpu")
-            eval_acc = checkpoint.get(
-                "eval_acc", 0.0
-            )  # Use eval_acc instead of test_acc
-            checkpoint_info.append((checkpoint_file, eval_acc))
-        except Exception as e:
-            print(f"Failed to load checkpoint {checkpoint_file.name}: {e}")
-            # If we can't load the checkpoint, assume it's old and should be removed
-            checkpoint_info.append((checkpoint_file, -1.0))
-
-    # Sort by eval accuracy (best first)
-    checkpoint_info.sort(key=lambda x: x[1], reverse=True)
-
-    # Keep the best checkpoints
-    best_checkpoints = checkpoint_info[:keep_best]
-    checkpoints_to_remove = checkpoint_info[keep_best:]
-
-    # Remove old checkpoints
-    for checkpoint_file, acc in checkpoints_to_remove:
+    for checkpoint_file in checkpoint_path.glob("checkpoint_*.pt"):
         try:
             checkpoint_file.unlink()
-            print(f"Removed checkpoint: {checkpoint_file.name} (eval_acc: {acc:.4f})")
+            print(f"Removed checkpoint: {checkpoint_file.name}")
         except Exception as e:
-            print(f"Failed to remove {checkpoint_file.name}: {e}")
-
-    # Log which checkpoints are being kept
-    print(f"Keeping {len(best_checkpoints)} best checkpoints:")
-    for checkpoint_file, acc in best_checkpoints:
-        print(f"  - {checkpoint_file.name} (eval_acc: {acc:.4f})")
+            print(f"Failed to remove checkpoint {checkpoint_file.name}: {e}")
 
 
 def get_checkpoint_dir(output_dir: str) -> str:
@@ -670,12 +638,6 @@ def main() -> None:
         default=None,
         help="Path to checkpoint file to resume training from",
     )
-    parser.add_argument(
-        "--keep_checkpoints",
-        type=int,
-        default=2,
-        help="Number of best checkpoints to keep based on eval accuracy (default: 2)",
-    )
 
     args = parser.parse_args()
 
@@ -869,11 +831,12 @@ def main() -> None:
             # Load training state
             start_epoch = checkpoint["epoch"] + 1
             global_step = checkpoint["global_step"]
-            best_acc = checkpoint["best_acc"]
+            # Reset best_acc to 0.0 for current run tracking (not from previous checkpoint)
+            best_acc = 0.0
             all_step_losses = checkpoint.get("step_losses", [])
 
             logger.info(f"Resumed from epoch {checkpoint['epoch']}, step {global_step}")
-            logger.info(f"Best accuracy so far: {best_acc:.4f}")
+            logger.info("Best accuracy tracking reset to 0.0 for current run")
 
             # Show checkpoint metadata if available
             if "timestamp" in checkpoint:
@@ -890,7 +853,7 @@ def main() -> None:
                         "training/resumed_from": args.resume_from,
                         "training/resume_epoch": checkpoint["epoch"],
                         "training/resume_step": global_step,
-                        "training/resume_best_acc": best_acc,
+                        "training/resume_best_acc_reset": True,
                     }
                 )
         else:
@@ -969,39 +932,48 @@ def main() -> None:
                 }
             )
 
-        # Save best model
+        # Save checkpoint only if this is the best eval_acc so far in this run
         if eval_acc > best_acc:
             best_acc = eval_acc
+
+            # Remove any existing checkpoints
+            cleanup_checkpoints(checkpoint_dir)
+
+            # Save new best checkpoint
+            checkpoint = {
+                "epoch": epoch,
+                "global_step": global_step,
+                "model_state_dict": model.state_dict(),
+                "optimizer_state_dict": optimizer.state_dict(),
+                "train_loss": train_loss,
+                "train_acc": train_acc,
+                "eval_loss": eval_loss,
+                "eval_acc": eval_acc,
+                "best_acc": best_acc,
+                "step_losses": all_step_losses,
+                "timestamp": datetime.now().isoformat(),
+                "model_name": args.model,
+                "learning_rate": args.learning_rate,
+                "batch_size": args.batch_size,
+            }
+            checkpoint_filename = f"checkpoint_epoch{epoch+1}_step{global_step}.pt"
+            checkpoint_path = os.path.join(checkpoint_dir, checkpoint_filename)
+            torch.save(checkpoint, checkpoint_path)
+            logger.info(
+                f"New best checkpoint saved: {checkpoint_filename} (eval_acc: {best_acc:.4f})"
+            )
+
+            # Save best model
             model.save_pretrained(os.path.join(checkpoint_dir, "best_model"))
             logger.info(f"New best model saved with accuracy: {best_acc:.4f}")
+
             # Log new best accuracy to wandb
             if wandb_available:
                 wandb.log({"best_accuracy": best_acc})
-
-        # Save checkpoint
-        checkpoint = {
-            "epoch": epoch,
-            "global_step": global_step,
-            "model_state_dict": model.state_dict(),
-            "optimizer_state_dict": optimizer.state_dict(),
-            "train_loss": train_loss,
-            "train_acc": train_acc,
-            "eval_loss": eval_loss,
-            "eval_acc": eval_acc,
-            "best_acc": best_acc,
-            "step_losses": all_step_losses,
-            "timestamp": datetime.now().isoformat(),
-            "model_name": args.model,
-            "learning_rate": args.learning_rate,
-            "batch_size": args.batch_size,
-        }
-        checkpoint_filename = f"checkpoint_epoch{epoch+1}_step{global_step}.pt"
-        checkpoint_path = os.path.join(checkpoint_dir, checkpoint_filename)
-        torch.save(checkpoint, checkpoint_path)
-        logger.info(f"Checkpoint saved: {checkpoint_filename}")
-
-        # Clean up old checkpoints
-        cleanup_old_checkpoints(checkpoint_dir, keep_best=args.keep_checkpoints)
+        else:
+            logger.info(
+                f"No new best accuracy. Current best: {best_acc:.4f}, This epoch: {eval_acc:.4f}"
+            )
 
     logger.info(f"Training completed! Best accuracy: {best_acc:.4f}")
     logger.info(f"Model saved to: {args.output_dir}")
