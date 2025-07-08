@@ -33,7 +33,14 @@ def setup_logging(log_level="INFO"):
 
 
 class BowelSoundDataset(Dataset):
-    def __init__(self, data_dir, split="train", max_length=2.0, sample_rate=16000):
+    def __init__(
+        self,
+        logger: logging.Logger,
+        data_dir,
+        split="train",
+        max_length=2.0,
+        sample_rate=16000,
+    ):
         """
         Dataset for bowel sound detection
 
@@ -66,7 +73,7 @@ class BowelSoundDataset(Dataset):
         self.files = self._load_file_list()
 
         # Load or preprocess data
-        self.processed_data = self._load_or_preprocess_data()
+        self.processed_data = self._load_or_preprocess_data(logger)
 
     def _load_file_list(self):
         """Load list of files for the specified split"""
@@ -80,34 +87,34 @@ class BowelSoundDataset(Dataset):
         """Convert time in seconds to frame index at 49Hz"""
         return math.ceil(time_seconds * self.frame_rate)
 
-    def _load_or_preprocess_data(self):
+    def _load_or_preprocess_data(self, logger: logging.Logger):
         """Load cached data if available, otherwise preprocess and cache"""
         if self.cache_path.exists():
-            print(f"Loading cached data from {self.cache_path}")
+            logger.info(f"Loading cached data from {self.cache_path}")
             try:
                 with open(self.cache_path, "rb") as f:
                     processed_data = pickle.load(f)
-                print(f"✓ Loaded {len(processed_data)} cached samples")
+                logger.info(f"✓ Loaded {len(processed_data)} cached samples")
                 return processed_data
             except Exception as e:
-                print(f"Error loading cache: {e}")
-                print("Will reprocess data...")
+                logger.error(f"Error loading cache: {e}")
+                logger.info("Will reprocess data...")
 
-        print(f"Processing data for {self.split} split...")
-        processed_data = self._preprocess_data()
+        logger.info(f"Processing data for {self.split} split...")
+        processed_data = self._preprocess_data(logger)
 
         # Cache the processed data
-        print(f"Saving processed data to {self.cache_path}")
+        logger.info(f"Saving processed data to {self.cache_path}")
         try:
             with open(self.cache_path, "wb") as f:
                 pickle.dump(processed_data, f)
-            print(f"✓ Cached {len(processed_data)} samples")
+            logger.info(f"✓ Cached {len(processed_data)} samples")
         except Exception as e:
-            print(f"Warning: Could not cache data: {e}")
+            logger.warning(f"Warning: Could not cache data: {e}")
 
         return processed_data
 
-    def _preprocess_data(self):
+    def _preprocess_data(self, logger: logging.Logger):
         """Preprocess all data and cache labels"""
         processed_data = []
 
@@ -128,14 +135,14 @@ class BowelSoundDataset(Dataset):
             try:
                 audio, sr = librosa.load(wav_path, sr=self.sample_rate)
             except Exception as e:
-                print(f"Error loading {wav_file}: {e}")
+                logger.error(f"Error loading {wav_file}: {e}")
                 continue
 
             # Load annotations
             try:
                 annotations = pd.read_csv(csv_path)
             except Exception as e:
-                print(f"Error loading {csv_file}: {e}")
+                logger.error(f"Error loading {csv_file}: {e}")
                 continue
 
             # Calculate number of frames for this audio
@@ -209,19 +216,19 @@ class BowelSoundDataset(Dataset):
                 chunk_start_time = 0.0
                 chunk_end_time = self.max_length
 
-                print(f"\n📊 Sample labels from {wav_file}:")
-                print(
+                logger.info(f"\n📊 Sample labels from {wav_file}:")
+                logger.info(
                     f"   - Time range: {chunk_start_time:.2f}s - {chunk_end_time:.2f}s"
                 )
-                print(f"   - Total frames: {total_frames}")
-                print(
+                logger.info(f"   - Total frames: {total_frames}")
+                logger.info(
                     f"   - Bowel sound frames: {bowel_sound_frames} ({100 * bowel_sound_frames / total_frames:.1f}%)"
                 )
-                print(f"   - All labels: {chunk_labels.tolist()}")
+                logger.info(f"   - All labels: {chunk_labels.tolist()}")
 
                 # Show original CSV annotations for this file
-                print(f"\n📋 Original CSV annotations for {csv_file}:")
-                print(annotations.to_string(index=False))
+                logger.info(f"\n📋 Original CSV annotations for {csv_file}:")
+                logger.info(annotations.to_string(index=False))
 
                 # Show which annotations fall within this 2-second segment
                 chunk_annotations = []
@@ -233,20 +240,20 @@ class BowelSoundDataset(Dataset):
                         chunk_annotations.append(row)
 
                 if chunk_annotations:
-                    print("\n🎯 Annotations that overlap with this 2s segment:")
+                    logger.info("\n🎯 Annotations that overlap with this 2s segment:")
                     for ann in chunk_annotations:
-                        print(f"   - {ann['start']:.3f}s to {ann['end']:.3f}s")
+                        logger.info(f"   - {ann['start']:.3f}s to {ann['end']:.3f}s")
                         # Convert to frame indices
                         start_frame = self._time_to_frame_index(ann["start"])
                         end_frame = self._time_to_frame_index(ann["end"])
                         # Adjust to chunk-relative indices
                         chunk_start_frame = max(0, start_frame)
                         chunk_end_frame = min(chunk_duration_frames, end_frame + 1)
-                        print(
+                        logger.info(
                             f"     -> frames {chunk_start_frame} to {chunk_end_frame} in chunk"
                         )
                 else:
-                    print("\n🎯 No annotations overlap with this 2s segment")
+                    logger.info("\n🎯 No annotations overlap with this 2s segment")
 
                 if bowel_sound_frames > 0:
                     # Find all bowel sound regions in this chunk
@@ -263,11 +270,11 @@ class BowelSoundDataset(Dataset):
                     if in_bowel:
                         bowel_regions.append((start_frame, len(chunk_labels) - 1))
 
-                    print("\n🔍 Bowel sound regions in this chunk:")
+                    logger.info("\n🔍 Bowel sound regions in this chunk:")
                     for start, end in bowel_regions:
                         start_time = start / self.frame_rate
                         end_time = end / self.frame_rate
-                        print(
+                        logger.info(
                             f"   - Frames {start}-{end}: {start_time:.3f}s - {end_time:.3f}s"
                         )
 
@@ -277,13 +284,13 @@ class BowelSoundDataset(Dataset):
         total_frames = sum(len(item["labels"]) for item in processed_data)
         total_bowel_frames = sum((item["labels"] == 1).sum() for item in processed_data)
 
-        print(f"\n📈 {self.split.capitalize()} Data Summary:")
-        print(f"   - Total files processed: {len(self.files)}")
-        print(f"   - Total chunks created: {len(processed_data)}")
-        print(f"   - Total annotations: {total_annotations}")
-        print(f"   - Total frames: {total_frames}")
-        print(f"   - Total bowel sound frames: {total_bowel_frames}")
-        print(
+        logger.info(f"\n📈 {self.split.capitalize()} Data Summary:")
+        logger.info(f"   - Total files processed: {len(self.files)}")
+        logger.info(f"   - Total chunks created: {len(processed_data)}")
+        logger.info(f"   - Total annotations: {total_annotations}")
+        logger.info(f"   - Total frames: {total_frames}")
+        logger.info(f"   - Total bowel sound frames: {total_bowel_frames}")
+        logger.info(
             f"   - Overall bowel sound ratio: {100 * total_bowel_frames / total_frames:.2f}%"
         )
 
@@ -318,11 +325,15 @@ class BowelSoundDataset(Dataset):
 
 
 def create_dataloaders(
-    data_dir, batch_size=8, num_workers=4
+    logger: logging.Logger, data_dir, batch_size=8, num_workers=4
 ) -> tuple[DataLoader[BowelSoundDataset], DataLoader[BowelSoundDataset], dict, dict]:
-    """Create train and validation dataloaders"""
-    train_dataset: BowelSoundDataset = BowelSoundDataset(data_dir, split="train")
-    test_dataset: BowelSoundDataset = BowelSoundDataset(data_dir, split="test")
+    """Create train and evaluation dataloaders"""
+    train_dataset: BowelSoundDataset = BowelSoundDataset(
+        data_dir=data_dir, split="train", logger=logger
+    )
+    eval_dataset: BowelSoundDataset = BowelSoundDataset(
+        data_dir=data_dir, split="test", logger=logger
+    )
 
     train_loader = DataLoader(
         train_dataset,
@@ -332,8 +343,8 @@ def create_dataloaders(
         pin_memory=True,
     )
 
-    test_loader = DataLoader(
-        test_dataset,
+    eval_loader = DataLoader(
+        eval_dataset,
         batch_size=batch_size,
         shuffle=False,
         num_workers=num_workers,
@@ -342,9 +353,9 @@ def create_dataloaders(
 
     # Calculate dataset statistics
     train_stats = _calculate_dataset_stats(train_dataset)
-    test_stats = _calculate_dataset_stats(test_dataset)
+    eval_stats = _calculate_dataset_stats(eval_dataset)
 
-    return train_loader, test_loader, train_stats, test_stats
+    return train_loader, eval_loader, train_stats, eval_stats
 
 
 def _calculate_dataset_stats(dataset: BowelSoundDataset) -> dict:
@@ -365,24 +376,56 @@ def _calculate_dataset_stats(dataset: BowelSoundDataset) -> dict:
     }
 
 
-def cleanup_old_checkpoints(output_dir: str, keep_last: int = 5):
-    """Clean up old checkpoint files, keeping only the most recent ones"""
-    output_path = Path(output_dir)
-    checkpoint_files = list(output_path.glob("checkpoint_*.pt"))
+def cleanup_old_checkpoints(checkpoint_dir: str, keep_best: int = 2):
+    """Clean up old checkpoint files, keeping only the best ones based on eval accuracy"""
+    checkpoint_path = Path(checkpoint_dir)
+    checkpoint_files = list(checkpoint_path.glob("checkpoint_*.pt"))
 
-    if len(checkpoint_files) <= keep_last:
+    if len(checkpoint_files) <= keep_best:
         return
 
-    # Sort by modification time (most recent first)
-    checkpoint_files.sort(key=lambda x: x.stat().st_mtime, reverse=True)
+    # Load checkpoint metadata to get eval accuracy
+    checkpoint_info = []
+    for checkpoint_file in checkpoint_files:
+        try:
+            checkpoint = torch.load(checkpoint_file, map_location="cpu")
+            eval_acc = checkpoint.get(
+                "eval_acc", 0.0
+            )  # Use eval_acc instead of test_acc
+            checkpoint_info.append((checkpoint_file, eval_acc))
+        except Exception as e:
+            print(f"Failed to load checkpoint {checkpoint_file.name}: {e}")
+            # If we can't load the checkpoint, assume it's old and should be removed
+            checkpoint_info.append((checkpoint_file, -1.0))
+
+    # Sort by eval accuracy (best first)
+    checkpoint_info.sort(key=lambda x: x[1], reverse=True)
+
+    # Keep the best checkpoints
+    best_checkpoints = checkpoint_info[:keep_best]
+    checkpoints_to_remove = checkpoint_info[keep_best:]
 
     # Remove old checkpoints
-    for old_checkpoint in checkpoint_files[keep_last:]:
+    for checkpoint_file, acc in checkpoints_to_remove:
         try:
-            old_checkpoint.unlink()
-            print(f"Removed old checkpoint: {old_checkpoint.name}")
+            checkpoint_file.unlink()
+            print(f"Removed checkpoint: {checkpoint_file.name} (eval_acc: {acc:.4f})")
         except Exception as e:
-            print(f"Failed to remove {old_checkpoint.name}: {e}")
+            print(f"Failed to remove {checkpoint_file.name}: {e}")
+
+    # Log which checkpoints are being kept
+    print(f"Keeping {len(best_checkpoints)} best checkpoints:")
+    for checkpoint_file, acc in best_checkpoints:
+        print(f"  - {checkpoint_file.name} (eval_acc: {acc:.4f})")
+
+
+def get_checkpoint_dir(output_dir: str) -> str:
+    """Create a checkpoint directory with today's date, hour, minute, and second"""
+    output_path = Path(output_dir)
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    checkpoint_dir = output_path / "checkpoints" / timestamp
+    checkpoint_dir.mkdir(parents=True, exist_ok=True)
+    return str(checkpoint_dir)
 
 
 def train_epoch(
@@ -504,60 +547,8 @@ def train_epoch(
     )
 
 
-def evaluate(model, test_loader, criterion, device):
-    """Evaluate the model"""
-    model.eval()
-    total_loss = 0
-    correct_predictions = 0
-    total_predictions = 0
-
-    with torch.no_grad():
-        for batch in tqdm(test_loader, desc="Evaluating"):
-            audio = batch["audio"].to(device)
-            labels = batch["labels"].to(device)
-
-            # Forward pass
-            outputs = model(audio)
-            logits = outputs.logits
-
-            # Get the actual sequence length from model output
-            batch_size, seq_len, num_labels = logits.shape
-
-            # Ensure labels match the model's output sequence length
-            if labels.size(1) != seq_len:
-                # Pad or truncate labels to match model output
-                if labels.size(1) > seq_len:
-                    # Truncate labels
-                    labels = labels[:, :seq_len]
-                else:
-                    # Pad labels with zeros
-                    padding = torch.zeros(
-                        batch_size,
-                        seq_len - labels.size(1),
-                        dtype=labels.dtype,
-                        device=labels.device,
-                    )
-                    labels = torch.cat([labels, padding], dim=1)
-
-            # Reshape for loss calculation
-            logits_flat = logits.view(-1, num_labels)
-            labels_flat = labels.view(-1)
-
-            # Calculate loss
-            loss = criterion(logits_flat, labels_flat)
-
-            # Calculate accuracy
-            predictions = torch.argmax(logits_flat, dim=1)
-            correct_predictions += (predictions == labels_flat).sum().item()
-            total_predictions += labels_flat.size(0)
-
-            total_loss += loss.item()
-
-    return total_loss / len(test_loader), correct_predictions / total_predictions
-
-
-def evaluate_subset(model, test_loader, criterion, device, max_batches=10):
-    """Evaluate on a subset of the test set for faster evaluation during training"""
+def evaluate_subset(model, eval_loader, criterion, device, max_batches=10):
+    """Evaluate on a subset of the evaluation set for faster evaluation during training"""
     model.eval()
     total_loss = 0
     correct_predictions = 0
@@ -565,7 +556,7 @@ def evaluate_subset(model, test_loader, criterion, device, max_batches=10):
     num_batches = 0
 
     with torch.no_grad():
-        for batch in test_loader:
+        for batch in eval_loader:
             if num_batches >= max_batches:
                 break
 
@@ -615,7 +606,7 @@ def evaluate_subset(model, test_loader, criterion, device, max_batches=10):
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Train Wav2Vec2 for bowel sound detection"
+        description="Train HuBERT/Wav2Vec2 for bowel sound detection"
     )
     parser.add_argument(
         "--data_dir", type=str, default="data", help="Directory containing data"
@@ -623,11 +614,11 @@ def main() -> None:
     parser.add_argument(
         "--output_dir", type=str, default="outputs", help="Output directory for model"
     )
-    parser.add_argument("--batch_size", type=int, default=8, help="Batch size")
+    parser.add_argument("--batch_size", type=int, default=16, help="Batch size")
     parser.add_argument(
-        "--learning_rate", type=float, default=1e-4, help="Learning rate"
+        "--learning_rate", type=float, default=5e-4, help="Learning rate"
     )
-    parser.add_argument("--num_epochs", type=int, default=10, help="Number of epochs")
+    parser.add_argument("--num_epochs", type=int, default=100, help="Number of epochs")
     parser.add_argument(
         "--max_length",
         type=float,
@@ -638,7 +629,10 @@ def main() -> None:
         "--num_workers", type=int, default=4, help="Number of workers for dataloader"
     )
     parser.add_argument(
-        "--eval_steps", type=int, default=50, help="Evaluate every N steps"
+        "--eval_steps",
+        type=int,
+        default=float("inf"),
+        help="Additionally evaluate every N steps, by default disabled (evals after every epoch)",
     )
     parser.add_argument(
         "--log_level",
@@ -662,7 +656,7 @@ def main() -> None:
     parser.add_argument(
         "--model",
         type=str,
-        default="facebook/wav2vec2-large",
+        default="facebook/hubert-xlarge-ll60k",
         choices=[
             "facebook/wav2vec2-large",
             "facebook/wav2vec2-base",
@@ -679,8 +673,8 @@ def main() -> None:
     parser.add_argument(
         "--keep_checkpoints",
         type=int,
-        default=5,
-        help="Number of recent checkpoints to keep (default: 5)",
+        default=2,
+        help="Number of best checkpoints to keep based on eval accuracy (default: 2)",
     )
 
     args = parser.parse_args()
@@ -715,18 +709,22 @@ def main() -> None:
     # Create output directory
     os.makedirs(args.output_dir, exist_ok=True)
 
+    # Create checkpoint directory for today
+    checkpoint_dir = get_checkpoint_dir(args.output_dir)
+    logger.info(f"Checkpoint directory: {checkpoint_dir}")
+
     # Set device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logger.info(f"Using device: {device}")
 
     # Create dataloaders
     logger.info("Creating dataloaders...")
-    train_loader, test_loader, train_stats, test_stats = create_dataloaders(
-        args.data_dir, batch_size=args.batch_size, num_workers=args.num_workers
+    train_loader, eval_loader, train_stats, eval_stats = create_dataloaders(
+        logger, args.data_dir, batch_size=args.batch_size, num_workers=args.num_workers
     )
 
     logger.info(f"Train samples: {len(train_loader.dataset)}")  # type: ignore
-    logger.info(f"Test samples: {len(test_loader.dataset)}")  # type: ignore
+    logger.info(f"Eval samples: {len(eval_loader.dataset)}")  # type: ignore
     logger.info(f"Using frame rate: {train_loader.dataset.frame_rate} Hz")  # type: ignore
 
     # Log dataset statistics to wandb
@@ -734,17 +732,17 @@ def main() -> None:
         wandb.log(
             {
                 "dataset/train_samples": len(train_loader.dataset),  # type: ignore
-                "dataset/test_samples": len(test_loader.dataset),  # type: ignore
+                "dataset/eval_samples": len(eval_loader.dataset),  # type: ignore
                 "dataset/train_files": train_stats["total_files"],
                 "dataset/train_chunks": train_stats["total_chunks"],
                 "dataset/train_frames": train_stats["total_frames"],
                 "dataset/train_bowel_frames": train_stats["total_bowel_frames"],
                 "dataset/train_bowel_ratio": train_stats["bowel_sound_ratio"],
-                "dataset/test_files": test_stats["total_files"],
-                "dataset/test_chunks": test_stats["total_chunks"],
-                "dataset/test_frames": test_stats["total_frames"],
-                "dataset/test_bowel_frames": test_stats["total_bowel_frames"],
-                "dataset/test_bowel_ratio": test_stats["bowel_sound_ratio"],
+                "dataset/eval_files": eval_stats["total_files"],
+                "dataset/eval_chunks": eval_stats["total_chunks"],
+                "dataset/eval_frames": eval_stats["total_frames"],
+                "dataset/eval_bowel_frames": eval_stats["total_bowel_frames"],
+                "dataset/eval_bowel_ratio": eval_stats["bowel_sound_ratio"],
                 "dataset/frame_rate": train_loader.dataset.frame_rate,  # type: ignore
             }
         )
@@ -932,14 +930,14 @@ def main() -> None:
         for step_loss in step_losses:
             global_step += 1
             all_step_losses.append(step_loss)
-            logger.info(f"Step {global_step}: loss = {step_loss:.4f}")
+            logger.debug(f"Step {global_step}: loss = {step_loss:.4f}")
 
             # Evaluate periodically
             if global_step % args.eval_steps == 0:
                 eval_loss, eval_acc = evaluate_subset(
-                    model, test_loader, criterion, device
+                    model, eval_loader, criterion, device
                 )
-                logger.info(
+                logger.debug(
                     f"Step {global_step} - Eval Loss: {eval_loss:.4f}, Eval Acc: {eval_acc:.4f}"
                 )
                 # Log evaluation metrics to wandb
@@ -952,12 +950,12 @@ def main() -> None:
                         }
                     )
 
-        # Full evaluation at end of epoch
-        test_loss, test_acc = evaluate(model, test_loader, criterion, device)
+        # Evaluation at end of epoch (using subset of test data for efficiency)
+        eval_loss, eval_acc = evaluate_subset(model, eval_loader, criterion, device)
 
         logger.info(f"Epoch {epoch + 1} Summary:")
         logger.info(f"  Train Loss: {train_loss:.4f}, Train Acc: {train_acc:.4f}")
-        logger.info(f"  Test Loss: {test_loss:.4f}, Test Acc: {test_acc:.4f}")
+        logger.info(f"  Eval Loss: {eval_loss:.4f}, Eval Acc: {eval_acc:.4f}")
 
         # Log epoch metrics to wandb
         if wandb_available:
@@ -966,22 +964,21 @@ def main() -> None:
                     "epoch": epoch + 1,
                     "train/epoch_loss": train_loss,
                     "train/epoch_accuracy": train_acc,
-                    "eval/epoch_loss": test_loss,
-                    "eval/epoch_accuracy": test_acc,
+                    "eval/epoch_loss": eval_loss,
+                    "eval/epoch_accuracy": eval_acc,
                 }
             )
 
         # Save best model
-        if test_acc > best_acc:
-            best_acc = test_acc
-            model.save_pretrained(os.path.join(args.output_dir, "best_model"))
+        if eval_acc > best_acc:
+            best_acc = eval_acc
+            model.save_pretrained(os.path.join(checkpoint_dir, "best_model"))
             logger.info(f"New best model saved with accuracy: {best_acc:.4f}")
             # Log new best accuracy to wandb
             if wandb_available:
                 wandb.log({"best_accuracy": best_acc})
 
-        # Save checkpoint with timestamp
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        # Save checkpoint
         checkpoint = {
             "epoch": epoch,
             "global_step": global_step,
@@ -989,8 +986,8 @@ def main() -> None:
             "optimizer_state_dict": optimizer.state_dict(),
             "train_loss": train_loss,
             "train_acc": train_acc,
-            "test_loss": test_loss,
-            "test_acc": test_acc,
+            "eval_loss": eval_loss,
+            "eval_acc": eval_acc,
             "best_acc": best_acc,
             "step_losses": all_step_losses,
             "timestamp": datetime.now().isoformat(),
@@ -998,15 +995,13 @@ def main() -> None:
             "learning_rate": args.learning_rate,
             "batch_size": args.batch_size,
         }
-        checkpoint_filename = (
-            f"checkpoint_epoch{epoch+1}_step{global_step}_{timestamp}.pt"
-        )
-        checkpoint_path = os.path.join(args.output_dir, checkpoint_filename)
+        checkpoint_filename = f"checkpoint_epoch{epoch+1}_step{global_step}.pt"
+        checkpoint_path = os.path.join(checkpoint_dir, checkpoint_filename)
         torch.save(checkpoint, checkpoint_path)
         logger.info(f"Checkpoint saved: {checkpoint_filename}")
 
         # Clean up old checkpoints
-        cleanup_old_checkpoints(args.output_dir, keep_last=args.keep_checkpoints)
+        cleanup_old_checkpoints(checkpoint_dir, keep_best=args.keep_checkpoints)
 
     logger.info(f"Training completed! Best accuracy: {best_acc:.4f}")
     logger.info(f"Model saved to: {args.output_dir}")
@@ -1027,8 +1022,8 @@ def main() -> None:
         "global_step": global_step,
         "best_acc": best_acc,
     }
-    torch.save(training_history, os.path.join(args.output_dir, "training_history.pt"))
-    logger.info(f"Training history saved to: {args.output_dir}/training_history.pt")
+    torch.save(training_history, os.path.join(checkpoint_dir, "training_history.pt"))
+    logger.info(f"Training history saved to: {checkpoint_dir}/training_history.pt")
 
     # Finish wandb run
     if wandb_available:
