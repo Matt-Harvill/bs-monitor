@@ -16,11 +16,11 @@ The training script supports multiple audio models:
 # Install dependencies
 uv sync
 
-# Train with default model (Wav2Vec2 Large)
+# Train with default model (HuBERT XLarge)
 uv run src/train/train.py
 
-# Train with HuBERT XLarge
-uv run src/train/train.py --model "facebook/hubert-xlarge-ll60k"
+# Train with Wav2Vec2 Large
+uv run src/train/train.py --model "facebook/wav2vec2-large"
 
 # Train with Wav2Vec2 Base
 uv run src/train/train.py --model "facebook/wav2vec2-base"
