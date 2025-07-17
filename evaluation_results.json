@@ -1,0 +1,1628 @@
+{
+  "timestamp": "2025-07-10T08:28:00.294693",
+  "model_path": "/home/matthew/Code/bs-monitor/outputs/checkpoints/2025-07-08_14-12-04/best_model",
+  "data_dir": "data",
+  "batch_size": 16,
+  "max_length": 2.0,
+  "device": "cuda",
+  "metrics": {
+    "loss": 0.15003184049523302,
+    "accuracy": 0.9669907800748923,
+    "precision": 0.8404423380726699,
+    "recall": 0.7673999278759466,
+    "f1_score": 0.8022620169651272,
+    "specificity": 0.9860718472040267,
+    "true_positives": 2128,
+    "false_positives": 404,
+    "true_negatives": 28602,
+    "false_negatives": 645,
+    "total_predictions": 31779
+  },
+  "file_metrics": {
+    "103_b.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "107_d.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "86_b.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "21_h.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "327_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "41_q.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "1_h.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "11_e.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "37_f.wav": {
+      "correct": 95,
+      "total": 99,
+      "accuracy": 0.9595959595959596
+    },
+    "2_e.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "98_a.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "34_d.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "2_s.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "244_a.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "36_a.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "80_d.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "91_d.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "54_b.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "119_c.wav": {
+      "correct": 89,
+      "total": 99,
+      "accuracy": 0.898989898989899
+    },
+    "160_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "50_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "32_d.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "154_a.wav": {
+      "correct": 76,
+      "total": 99,
+      "accuracy": 0.7676767676767676
+    },
+    "197_a.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "209_c.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "300_a.wav": {
+      "correct": 95,
+      "total": 99,
+      "accuracy": 0.9595959595959596
+    },
+    "126_a.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "17_q.wav": {
+      "correct": 92,
+      "total": 99,
+      "accuracy": 0.9292929292929293
+    },
+    "69_q.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "203_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "313_a.wav": {
+      "correct": 90,
+      "total": 99,
+      "accuracy": 0.9090909090909091
+    },
+    "60_d.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "58_e.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "32_c.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "31_g.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "109_c.wav": {
+      "correct": 88,
+      "total": 99,
+      "accuracy": 0.8888888888888888
+    },
+    "244_c.wav": {
+      "correct": 91,
+      "total": 99,
+      "accuracy": 0.9191919191919192
+    },
+    "116_q.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "176_d.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "117_e.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "282_c.wav": {
+      "correct": 92,
+      "total": 99,
+      "accuracy": 0.9292929292929293
+    },
+    "250_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "56_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "14_g.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "405_c.wav": {
+      "correct": 86,
+      "total": 99,
+      "accuracy": 0.8686868686868687
+    },
+    "236_c.wav": {
+      "correct": 94,
+      "total": 99,
+      "accuracy": 0.9494949494949495
+    },
+    "73_e.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "86_d.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "84_e.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "117_d.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "20_d.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "149_d.wav": {
+      "correct": 95,
+      "total": 99,
+      "accuracy": 0.9595959595959596
+    },
+    "118_c.wav": {
+      "correct": 87,
+      "total": 99,
+      "accuracy": 0.8787878787878788
+    },
+    "46_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "98_b.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "38_e.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "272_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "36_f.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "400_c.wav": {
+      "correct": 84,
+      "total": 99,
+      "accuracy": 0.8484848484848485
+    },
+    "64_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "257_c.wav": {
+      "correct": 95,
+      "total": 99,
+      "accuracy": 0.9595959595959596
+    },
+    "218_c.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "263_c.wav": {
+      "correct": 92,
+      "total": 99,
+      "accuracy": 0.9292929292929293
+    },
+    "111_b.wav": {
+      "correct": 95,
+      "total": 99,
+      "accuracy": 0.9595959595959596
+    },
+    "225_c.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "23_e.wav": {
+      "correct": 93,
+      "total": 99,
+      "accuracy": 0.9393939393939394
+    },
+    "70_b.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "28_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "35_d.wav": {
+      "correct": 93,
+      "total": 99,
+      "accuracy": 0.9393939393939394
+    },
+    "31_b.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "50_q.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "13_g.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "349_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "2_h.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "5_i.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "47_a.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "130_c.wav": {
+      "correct": 84,
+      "total": 99,
+      "accuracy": 0.8484848484848485
+    },
+    "208_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "162_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "46_d.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "39_e.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "93_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "255_c.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "117_b.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "57_f.wav": {
+      "correct": 92,
+      "total": 99,
+      "accuracy": 0.9292929292929293
+    },
+    "1_j.wav": {
+      "correct": 94,
+      "total": 99,
+      "accuracy": 0.9494949494949495
+    },
+    "75_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "5_p.wav": {
+      "correct": 95,
+      "total": 99,
+      "accuracy": 0.9595959595959596
+    },
+    "319_c.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "394_c.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "30_f.wav": {
+      "correct": 95,
+      "total": 99,
+      "accuracy": 0.9595959595959596
+    },
+    "237_a.wav": {
+      "correct": 94,
+      "total": 99,
+      "accuracy": 0.9494949494949495
+    },
+    "102_d.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "165_d.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "36_g.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "322_a.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "270_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "174_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "83_c.wav": {
+      "correct": 86,
+      "total": 99,
+      "accuracy": 0.8686868686868687
+    },
+    "93_q.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "176_c.wav": {
+      "correct": 80,
+      "total": 99,
+      "accuracy": 0.8080808080808081
+    },
+    "91_e.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "14_n.wav": {
+      "correct": 89,
+      "total": 99,
+      "accuracy": 0.898989898989899
+    },
+    "205_c.wav": {
+      "correct": 93,
+      "total": 99,
+      "accuracy": 0.9393939393939394
+    },
+    "51_e.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "60_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "343_c.wav": {
+      "correct": 90,
+      "total": 99,
+      "accuracy": 0.9090909090909091
+    },
+    "72_b.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "331_a.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "103_q.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "85_a.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "116_d.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "142_e.wav": {
+      "correct": 95,
+      "total": 99,
+      "accuracy": 0.9595959595959596
+    },
+    "278_a.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "97_a.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "43_b.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "310_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "134_a.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "64_q.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "388_c.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "70_e.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "161_d.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "4_b.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "94_d.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "90_d.wav": {
+      "correct": 93,
+      "total": 99,
+      "accuracy": 0.9393939393939394
+    },
+    "330_c.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "1_b.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "57_a.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "252_a.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "37_d.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "150_e.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "349_c.wav": {
+      "correct": 90,
+      "total": 99,
+      "accuracy": 0.9090909090909091
+    },
+    "273_a.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "66_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "106_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "67_e.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "264_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "29_n.wav": {
+      "correct": 95,
+      "total": 99,
+      "accuracy": 0.9595959595959596
+    },
+    "220_c.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "236_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "54_c.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "86_q.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "4_m.wav": {
+      "correct": 82,
+      "total": 99,
+      "accuracy": 0.8282828282828283
+    },
+    "287_a.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "31_d.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "197_c.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "82_e.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "256_c.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "131_a.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "89_d.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "145_e.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "250_c.wav": {
+      "correct": 95,
+      "total": 99,
+      "accuracy": 0.9595959595959596
+    },
+    "199_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "59_b.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "21_f.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "28_c.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "299_a.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "153_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "148_c.wav": {
+      "correct": 95,
+      "total": 99,
+      "accuracy": 0.9595959595959596
+    },
+    "57_d.wav": {
+      "correct": 95,
+      "total": 99,
+      "accuracy": 0.9595959595959596
+    },
+    "15_b.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "341_c.wav": {
+      "correct": 95,
+      "total": 99,
+      "accuracy": 0.9595959595959596
+    },
+    "185_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "5_n.wav": {
+      "correct": 95,
+      "total": 99,
+      "accuracy": 0.9595959595959596
+    },
+    "213_c.wav": {
+      "correct": 94,
+      "total": 99,
+      "accuracy": 0.9494949494949495
+    },
+    "13_d.wav": {
+      "correct": 93,
+      "total": 99,
+      "accuracy": 0.9393939393939394
+    },
+    "256_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "266_c.wav": {
+      "correct": 79,
+      "total": 99,
+      "accuracy": 0.797979797979798
+    },
+    "399_c.wav": {
+      "correct": 92,
+      "total": 99,
+      "accuracy": 0.9292929292929293
+    },
+    "44_c.wav": {
+      "correct": 92,
+      "total": 99,
+      "accuracy": 0.9292929292929293
+    },
+    "28_b.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "203_c.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "190_c.wav": {
+      "correct": 88,
+      "total": 99,
+      "accuracy": 0.8888888888888888
+    },
+    "270_c.wav": {
+      "correct": 61,
+      "total": 99,
+      "accuracy": 0.6161616161616161
+    },
+    "231_a.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "101_q.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "28_f.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "403_c.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "119_e.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "248_c.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "177_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "42_e.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "41_e.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "42_g.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "101_a.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "146_d.wav": {
+      "correct": 95,
+      "total": 99,
+      "accuracy": 0.9595959595959596
+    },
+    "65_f.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "7_e.wav": {
+      "correct": 92,
+      "total": 99,
+      "accuracy": 0.9292929292929293
+    },
+    "52_f.wav": {
+      "correct": 92,
+      "total": 99,
+      "accuracy": 0.9292929292929293
+    },
+    "0_c.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "84_q.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "51_b.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "296_a.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "0_o.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "94_b.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "78_f.wav": {
+      "correct": 93,
+      "total": 99,
+      "accuracy": 0.9393939393939394
+    },
+    "16_g.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "96_b.wav": {
+      "correct": 94,
+      "total": 99,
+      "accuracy": 0.9494949494949495
+    },
+    "168_d.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "217_c.wav": {
+      "correct": 89,
+      "total": 99,
+      "accuracy": 0.898989898989899
+    },
+    "161_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "396_c.wav": {
+      "correct": 80,
+      "total": 99,
+      "accuracy": 0.8080808080808081
+    },
+    "107_a.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "217_a.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "34_a.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "346_c.wav": {
+      "correct": 87,
+      "total": 99,
+      "accuracy": 0.8787878787878788
+    },
+    "24_q.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "88_d.wav": {
+      "correct": 92,
+      "total": 99,
+      "accuracy": 0.9292929292929293
+    },
+    "108_c.wav": {
+      "correct": 93,
+      "total": 99,
+      "accuracy": 0.9393939393939394
+    },
+    "32_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "105_a.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "148_e.wav": {
+      "correct": 95,
+      "total": 99,
+      "accuracy": 0.9595959595959596
+    },
+    "55_d.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "114_q.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "72_d.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "280_c.wav": {
+      "correct": 91,
+      "total": 99,
+      "accuracy": 0.9191919191919192
+    },
+    "99_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "43_a.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "109_d.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "0_p.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "242_c.wav": {
+      "correct": 88,
+      "total": 99,
+      "accuracy": 0.8888888888888888
+    },
+    "147_e.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "201_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "116_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "133_d.wav": {
+      "correct": 92,
+      "total": 99,
+      "accuracy": 0.9292929292929293
+    },
+    "8_b.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "123_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "3_s.wav": {
+      "correct": 94,
+      "total": 99,
+      "accuracy": 0.9494949494949495
+    },
+    "3_r.wav": {
+      "correct": 89,
+      "total": 99,
+      "accuracy": 0.898989898989899
+    },
+    "16_q.wav": {
+      "correct": 92,
+      "total": 99,
+      "accuracy": 0.9292929292929293
+    },
+    "6_b.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "18_h.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "175_d.wav": {
+      "correct": 95,
+      "total": 99,
+      "accuracy": 0.9595959595959596
+    },
+    "178_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "141_c.wav": {
+      "correct": 89,
+      "total": 99,
+      "accuracy": 0.898989898989899
+    },
+    "145_a.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "288_c.wav": {
+      "correct": 89,
+      "total": 99,
+      "accuracy": 0.898989898989899
+    },
+    "7_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "317_c.wav": {
+      "correct": 85,
+      "total": 99,
+      "accuracy": 0.8585858585858586
+    },
+    "16_h.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "188_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "211_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "214_c.wav": {
+      "correct": 87,
+      "total": 99,
+      "accuracy": 0.8787878787878788
+    },
+    "10_o.wav": {
+      "correct": 93,
+      "total": 99,
+      "accuracy": 0.9393939393939394
+    },
+    "74_e.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "251_a.wav": {
+      "correct": 92,
+      "total": 99,
+      "accuracy": 0.9292929292929293
+    },
+    "24_d.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "11_n.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "74_b.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "111_q.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "170_c.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "6_e.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "96_q.wav": {
+      "correct": 94,
+      "total": 99,
+      "accuracy": 0.9494949494949495
+    },
+    "328_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "5_o.wav": {
+      "correct": 89,
+      "total": 99,
+      "accuracy": 0.898989898989899
+    },
+    "23_c.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "74_c.wav": {
+      "correct": 84,
+      "total": 99,
+      "accuracy": 0.8484848484848485
+    },
+    "283_a.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "308_a.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "342_a.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "79_q.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "14_c.wav": {
+      "correct": 95,
+      "total": 99,
+      "accuracy": 0.9595959595959596
+    },
+    "7_f.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "66_f.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "61_q.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "61_d.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "307_a.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "14_d.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "294_c.wav": {
+      "correct": 73,
+      "total": 99,
+      "accuracy": 0.7373737373737373
+    },
+    "267_a.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "63_d.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "247_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "78_a.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "3_f.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "16_a.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "80_b.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "67_f.wav": {
+      "correct": 94,
+      "total": 99,
+      "accuracy": 0.9494949494949495
+    },
+    "10_c.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "36_c.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "342_c.wav": {
+      "correct": 82,
+      "total": 99,
+      "accuracy": 0.8282828282828283
+    },
+    "238_c.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "23_a.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "261_c.wav": {
+      "correct": 88,
+      "total": 99,
+      "accuracy": 0.8888888888888888
+    },
+    "34_q.wav": {
+      "correct": 94,
+      "total": 99,
+      "accuracy": 0.9494949494949495
+    },
+    "11_f.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "38_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "46_f.wav": {
+      "correct": 94,
+      "total": 99,
+      "accuracy": 0.9494949494949495
+    },
+    "1_g.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "325_a.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "173_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "14_q.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "356_c.wav": {
+      "correct": 89,
+      "total": 99,
+      "accuracy": 0.898989898989899
+    },
+    "179_a.wav": {
+      "correct": 93,
+      "total": 99,
+      "accuracy": 0.9393939393939394
+    },
+    "19_a.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "19_b.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "54_e.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "18_b.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "156_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "14_e.wav": {
+      "correct": 86,
+      "total": 99,
+      "accuracy": 0.8686868686868687
+    },
+    "389_c.wav": {
+      "correct": 96,
+      "total": 99,
+      "accuracy": 0.9696969696969697
+    },
+    "101_c.wav": {
+      "correct": 87,
+      "total": 99,
+      "accuracy": 0.8787878787878788
+    },
+    "212_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "128_a.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "34_f.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "288_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "19_h.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "100_e.wav": {
+      "correct": 82,
+      "total": 99,
+      "accuracy": 0.8282828282828283
+    },
+    "137_d.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "51_f.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "382_c.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "199_c.wav": {
+      "correct": 97,
+      "total": 99,
+      "accuracy": 0.9797979797979798
+    },
+    "25_a.wav": {
+      "correct": 95,
+      "total": 99,
+      "accuracy": 0.9595959595959596
+    },
+    "214_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "45_g.wav": {
+      "correct": 87,
+      "total": 99,
+      "accuracy": 0.8787878787878788
+    },
+    "331_c.wav": {
+      "correct": 75,
+      "total": 99,
+      "accuracy": 0.7575757575757576
+    },
+    "407_c.wav": {
+      "correct": 89,
+      "total": 99,
+      "accuracy": 0.898989898989899
+    },
+    "58_d.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "59_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    },
+    "103_e.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "40_g.wav": {
+      "correct": 98,
+      "total": 99,
+      "accuracy": 0.98989898989899
+    },
+    "228_a.wav": {
+      "correct": 99,
+      "total": 99,
+      "accuracy": 1.0
+    }
+  }
+}
