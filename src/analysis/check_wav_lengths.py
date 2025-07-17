@@ -23,7 +23,7 @@ def get_wav_duration(wav_file_path):
 
 def main():
     # Get the data directory path
-    data_dir = Path("data")
+    data_dir = Path("data/bs-dataset")
 
     # Find all CSV files in the data directory (excluding files.csv which seems to be metadata)
     csv_files = list(data_dir.glob("*.csv"))

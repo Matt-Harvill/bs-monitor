@@ -164,7 +164,10 @@ def main() -> None:
         description="Evaluate trained HuBERT/Wav2Vec2 model for bowel sound detection"
     )
     parser.add_argument(
-        "--data_dir", type=str, default="data", help="Directory containing data"
+        "--data_dir",
+        type=str,
+        default="data",
+        help="Directory containing data (files should be in data/bs-dataset/)",
     )
     parser.add_argument(
         "--model_path",

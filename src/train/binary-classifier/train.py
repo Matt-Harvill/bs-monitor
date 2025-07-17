@@ -124,9 +124,9 @@ class BowelSoundDataset(Dataset):
         sample_labels_shown = 0
 
         for wav_file in tqdm(self.files, desc=f"Preprocessing {self.split} data"):
-            wav_path = self.data_dir / wav_file
+            wav_path = self.data_dir / "bs-dataset" / wav_file
             csv_file = wav_file.replace(".wav", ".csv")
-            csv_path = self.data_dir / csv_file
+            csv_path = self.data_dir / "bs-dataset" / csv_file
 
             if not csv_path.exists():
                 continue
@@ -577,7 +577,10 @@ def main() -> None:
         description="Train HuBERT/Wav2Vec2 for bowel sound detection"
     )
     parser.add_argument(
-        "--data_dir", type=str, default="data", help="Directory containing data"
+        "--data_dir",
+        type=str,
+        default="data",
+        help="Directory containing data (files should be in data/bs-dataset/)",
     )
     parser.add_argument(
         "--output_dir", type=str, default="outputs", help="Output directory for model"

@@ -127,12 +127,12 @@ def quick_stats(file_path: str) -> None:
 # Example usage:
 if __name__ == "__main__":
     # Replace with your directory path
-    audio_directory = "data"
+    audio_directory = "data/bs-dataset"
 
     # Method 1: Analyze multiple files
     analyze_multiple_files(audio_directory, "*.wav", max_files=10)
 
     # # Method 2: Analyze single file
-    # single_file = "data/0_a.wav"
+    # single_file = "data/bs-dataset/0_a.wav"
     # visualize_audio_file(single_file)
     # quick_stats(single_file)
