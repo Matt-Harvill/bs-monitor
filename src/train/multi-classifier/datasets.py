@@ -8,9 +8,14 @@ import numpy as np
 import torch
 from torch.utils.data import DataLoader, Dataset
 
-from .config import MultiClassifierConfig
-from .data_splits import DataSplitter
-from .logging_config import get_logger
+try:
+    from .config import MultiClassifierConfig
+    from .data_splits import DataSplitter
+    from .logging_config import get_logger
+except ImportError:
+    from config import MultiClassifierConfig
+    from data_splits import DataSplitter
+    from logging_config import get_logger
 
 
 class MultiClassDataset(Dataset):
@@ -42,8 +47,8 @@ class MultiClassDataset(Dataset):
         # Get splits
         self.splits = self.data_splitter.get_splits(config.datasets, config.duration)
 
-        # Load label files
-        self.labels_dir = Path("src/train/multi-classifier/labels")
+        # Load label files - use absolute path or relative to current script
+        self.labels_dir = Path(__file__).parent / "labels"
         self.audio_paths = {}
         self.labels = {}
 

@@ -8,8 +8,8 @@ class MultiClassifierConfig:
     """Configuration for multi-classifier training."""
 
     # Data paths
-    data_dir: str = "data"
-    output_dir: str = "outputs"
+    data_dir: str = "/home/matthew/Code/bs-monitor/data"
+    output_dir: str = "/home/matthew/Code/bs-monitor/outputs"
 
     # Model settings
     model_name: str = "facebook/hubert-xlarge-ll60k"
@@ -17,6 +17,7 @@ class MultiClassifierConfig:
 
     # Training settings
     batch_size: int = 16
+    accumulation_steps: int = 1  # Gradient accumulation steps
     learning_rate: float = 5e-4
     num_epochs: int = 100
     max_length: float = 2.0  # seconds
@@ -28,6 +29,7 @@ class MultiClassifierConfig:
     # Training behavior
     num_workers: int = 4
     eval_steps: int = float("inf")  # Evaluate every N steps
+    log_every_n_steps: int = 10  # Log to wandb every N optimizer steps
 
     # Logging
     log_level: str = "INFO"

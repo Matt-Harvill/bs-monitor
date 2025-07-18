@@ -7,7 +7,10 @@ from pathlib import Path
 
 import numpy as np
 
-from .logging_config import get_logger
+try:
+    from .logging_config import get_logger
+except ImportError:
+    from logging_config import get_logger
 
 
 class DataSplitter:
@@ -35,7 +38,7 @@ class DataSplitter:
         self.test_ratio = 0.1
 
         # Path for saving split information
-        self.splits_dir = Path("src/train/multi-classifier/splits")
+        self.splits_dir = Path(__file__).parent / "splits"
         self.splits_dir.mkdir(parents=True, exist_ok=True)
 
     def create_splits(
@@ -64,8 +67,10 @@ class DataSplitter:
 
         for dataset_name in datasets:
             # Load labels to get chunk indices
-            labels_file = Path(
-                f"src/train/multi-classifier/labels/{dataset_name}_{duration}s_labels.pkl"
+            labels_file = (
+                Path(__file__).parent
+                / "labels"
+                / f"{dataset_name}_{duration}s_labels.pkl"
             )
 
             if not labels_file.exists():
