@@ -5,6 +5,7 @@ import os
 from datetime import datetime
 from pathlib import Path
 
+import math
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -38,6 +39,7 @@ def train_epoch(
     accumulation_steps=1,
     wandb_log=True,
     log_every_n_steps=10,
+    scheduler=None,
 ):
     """Train for one epoch with gradient accumulation."""
     model.train()
@@ -88,6 +90,8 @@ def train_epoch(
         # Update weights every accumulation_steps
         if (idx + 1) % accumulation_steps == 0 or (idx + 1) == len(train_loader):
             optimizer.step()
+            if scheduler is not None:
+                scheduler.step()
             optimizer.zero_grad()
             optimizer_steps += 1
 
@@ -111,13 +115,17 @@ def train_epoch(
             if wandb_log and optimizer_steps % log_every_n_steps == 0:
                 import wandb
 
-                wandb.log(
-                    {
-                        "train/step_loss": total_loss / optimizer_steps,
-                        "train/step_accuracy": correct / total,
-                        "train/optimizer_steps": optimizer_steps,
-                    }
-                )
+                log_dict = {
+                    "train/step_loss": total_loss / optimizer_steps,
+                    "train/step_accuracy": correct / total,
+                    "train/optimizer_steps": optimizer_steps,
+                }
+                
+                # Add current learning rate if scheduler is used
+                if scheduler is not None:
+                    log_dict["train/learning_rate"] = scheduler.get_last_lr()[0]
+                
+                wandb.log(log_dict)
 
     progress_bar.close()
     return total_loss / optimizer_steps, correct / total
@@ -162,6 +170,23 @@ def evaluate(model, loader, criterion, device):
     return total_loss / len(loader), correct / total
 
 
+def get_lr_schedule_fn(warmup_steps: int, total_steps: int, min_lr_ratio: float = 0.0):
+    """Create learning rate schedule function with warmup + cosine decay."""
+    
+    def lr_lambda(current_step: int) -> float:
+        if current_step < warmup_steps:
+            # Linear warmup from 1/warmup_steps to 1
+            return (current_step + 1) / warmup_steps
+        else:
+            # Cosine decay
+            progress = (current_step - warmup_steps) / (total_steps - warmup_steps)
+            progress = min(progress, 1.0)  # Clamp to [0, 1]
+            cosine_decay = 0.5 * (1 + math.cos(math.pi * progress))
+            return min_lr_ratio + (1 - min_lr_ratio) * cosine_decay
+    
+    return lr_lambda
+
+
 def get_checkpoint_dir(output_dir: str) -> str:
     """Create checkpoint directory with timestamp."""
     output_path = Path(output_dir)
@@ -185,6 +210,9 @@ def main():
     )
     parser.add_argument("--wandb_run_name", type=str, help="W&B run name")
     parser.add_argument("--resume_from", type=str, help="Resume from checkpoint")
+    parser.add_argument("--no_lr_schedule", action="store_true", help="Disable LR schedule")
+    parser.add_argument("--warmup_steps", type=int, help="Number of warmup steps")
+    parser.add_argument("--min_lr_ratio", type=float, help="Min LR as ratio of initial LR")
 
     args = parser.parse_args()
 
@@ -206,6 +234,12 @@ def main():
         config.wandb_run_name = args.wandb_run_name
     if args.resume_from:
         config.resume_from = args.resume_from
+    if args.no_lr_schedule:
+        config.use_lr_schedule = False
+    if args.warmup_steps:
+        config.warmup_steps = args.warmup_steps
+    if args.min_lr_ratio is not None:
+        config.min_lr_ratio = args.min_lr_ratio
 
     # Setup logging
     logger = get_logger()
@@ -264,6 +298,21 @@ def main():
 
     # Setup optimizer and criterion
     optimizer = optim.AdamW(model.parameters(), lr=config.learning_rate)
+    
+    # Setup learning rate scheduler if enabled
+    scheduler = None
+    if config.use_lr_schedule:
+        # Calculate total training steps
+        steps_per_epoch = len(train_loader) // config.accumulation_steps
+        if len(train_loader) % config.accumulation_steps != 0:
+            steps_per_epoch += 1
+        total_steps = steps_per_epoch * config.num_epochs
+        
+        logger.info(f"Learning rate schedule: warmup_steps={config.warmup_steps}, total_steps={total_steps}")
+        logger.info(f"Initial LR: {config.learning_rate}, Min LR ratio: {config.min_lr_ratio}")
+        
+        lr_lambda = get_lr_schedule_fn(config.warmup_steps, total_steps, config.min_lr_ratio)
+        scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lr_lambda)
 
     # Use weighted cross entropy if class weights provided
     if config.class_weights:
@@ -287,6 +336,8 @@ def main():
         checkpoint = torch.load(config.resume_from, map_location=device)
         model.load_state_dict(checkpoint["model_state_dict"])
         optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+        if scheduler is not None and "scheduler_state_dict" in checkpoint:
+            scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
         start_epoch = checkpoint["epoch"] + 1
         logger.info(f"Resumed from epoch {checkpoint['epoch']}")
 
@@ -305,6 +356,7 @@ def main():
             config.accumulation_steps,
             wandb_available,
             config.log_every_n_steps,
+            scheduler,
         )
 
         # Validate
@@ -341,6 +393,10 @@ def main():
                 "best_val_acc": best_val_acc,
                 "config": vars(config),
             }
+            
+            # Save scheduler state if available
+            if scheduler is not None:
+                checkpoint["scheduler_state_dict"] = scheduler.state_dict()
 
             checkpoint_path = os.path.join(checkpoint_dir, "best_checkpoint.pt")
             torch.save(checkpoint, checkpoint_path)
