@@ -116,7 +116,7 @@ class MultiClassDataset(Dataset):
 
     def _log_class_distribution(self):
         """Log the distribution of classes in the dataset."""
-        class_counts = {cls: 0 for cls in self.config.class_to_idx.keys()}
+        class_counts = dict.fromkeys(self.config.class_to_idx.keys(), 0)
 
         for sample in self.samples:
             labels = sample["labels"]

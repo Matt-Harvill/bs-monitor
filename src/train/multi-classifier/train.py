@@ -185,6 +185,11 @@ def main():
     )
     parser.add_argument("--wandb_run_name", type=str, help="W&B run name")
     parser.add_argument("--resume_from", type=str, help="Resume from checkpoint")
+    parser.add_argument(
+        "--skip_optimizer_load",
+        action="store_true",
+        help="Skip loading optimizer state when resuming",
+    )
 
     args = parser.parse_args()
 
@@ -259,9 +264,6 @@ def main():
         model.freeze_feature_encoder()
         logger.info("Feature encoder frozen")
 
-    # Move model to device
-    model = model.to(device)
-
     # Setup optimizer and criterion
     optimizer = optim.AdamW(model.parameters(), lr=config.learning_rate)
 
@@ -281,14 +283,41 @@ def main():
     checkpoint_dir = get_checkpoint_dir(config.output_dir)
     logger.info(f"Checkpoint directory: {checkpoint_dir}")
 
+    # Move model to device before loading checkpoint
+    model = model.to(device)
+
     # Resume from checkpoint if specified
     if config.resume_from and os.path.exists(config.resume_from):
         logger.info(f"Resuming from checkpoint: {config.resume_from}")
-        checkpoint = torch.load(config.resume_from, map_location=device)
+        # Load checkpoint more efficiently
+        checkpoint = torch.load(config.resume_from, map_location="cpu")
+
+        # Load model state
         model.load_state_dict(checkpoint["model_state_dict"])
-        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+
+        # Only load optimizer state if we're continuing training
+        # This avoids memory issues when just evaluating
+        if "optimizer_state_dict" in checkpoint and not args.skip_optimizer_load:
+            # Create a new optimizer with current model parameters
+            optimizer = optim.AdamW(model.parameters(), lr=config.learning_rate)
+            try:
+                optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+                # Move optimizer state to device
+                for state in optimizer.state.values():
+                    for k, v in state.items():
+                        if isinstance(v, torch.Tensor):
+                            state[k] = v.to(device)
+            except RuntimeError as e:
+                logger.warning(f"Failed to load optimizer state: {e}")
+                logger.info("Creating fresh optimizer instead")
+                optimizer = optim.AdamW(model.parameters(), lr=config.learning_rate)
+
         start_epoch = checkpoint["epoch"] + 1
         logger.info(f"Resumed from epoch {checkpoint['epoch']}")
+
+        # Clean up checkpoint from memory
+        del checkpoint
+        torch.cuda.empty_cache()
 
     # Training loop
     logger.info("Starting training...")
