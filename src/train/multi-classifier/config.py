@@ -21,6 +21,11 @@ class MultiClassifierConfig:
     learning_rate: float = 5e-4
     num_epochs: int = 100
     max_length: float = 2.0  # seconds
+    
+    # Learning rate schedule
+    use_lr_schedule: bool = True
+    warmup_steps: int = 10  # Number of warmup steps
+    min_lr_ratio: float = 0.0  # Minimum LR as ratio of initial LR (0 = decay to 0)
 
     # Data settings
     sample_rate: int = 16000
