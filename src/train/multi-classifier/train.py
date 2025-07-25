@@ -40,6 +40,7 @@ def train_epoch(
     wandb_log=True,
     log_every_n_steps=10,
     scheduler=None,
+    global_step=0,
 ):
     """Train for one epoch with gradient accumulation."""
     model.train()
@@ -47,7 +48,7 @@ def train_epoch(
     correct = 0
     total = 0
     accumulated_loss = 0
-    optimizer_steps = 0
+    optimizer_steps = 0  # Local counter for this epoch
 
     # Calculate total optimizer steps for progress bar
     total_optimizer_steps = len(train_loader) // accumulation_steps
@@ -94,6 +95,7 @@ def train_epoch(
                 scheduler.step()
             optimizer.zero_grad()
             optimizer_steps += 1
+            global_step += 1
 
             # Calculate average loss for this optimizer step
             step_loss = accumulated_loss / accumulation_steps
@@ -111,24 +113,24 @@ def train_epoch(
                 }
             )
 
-            # Log to wandb every N optimizer steps
-            if wandb_log and optimizer_steps % log_every_n_steps == 0:
+            # Log to wandb every N global steps
+            if wandb_log and global_step % log_every_n_steps == 0:
                 import wandb
 
                 log_dict = {
                     "train/step_loss": total_loss / optimizer_steps,
                     "train/step_accuracy": correct / total,
-                    "train/optimizer_steps": optimizer_steps,
+                    "train/global_step": global_step,
                 }
 
                 # Add current learning rate if scheduler is used
                 if scheduler is not None:
                     log_dict["train/learning_rate"] = scheduler.get_last_lr()[0]
 
-                wandb.log(log_dict)
+                wandb.log(log_dict, step=global_step)
 
     progress_bar.close()
-    return total_loss / optimizer_steps, correct / total
+    return total_loss / optimizer_steps, correct / total, global_step
 
 
 def evaluate(model, loader, criterion, device):
@@ -339,6 +341,7 @@ def main():
     # Initialize training state
     start_epoch = 0
     best_val_acc = 0.0
+    global_step = 0
     checkpoint_dir = get_checkpoint_dir(config.output_dir)
     logger.info(f"Checkpoint directory: {checkpoint_dir}")
 
@@ -371,11 +374,14 @@ def main():
                 logger.info("Creating fresh optimizer instead")
                 optimizer = optim.AdamW(model.parameters(), lr=config.learning_rate)
 
-        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
         if scheduler is not None and "scheduler_state_dict" in checkpoint:
             scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
         start_epoch = checkpoint["epoch"] + 1
-        logger.info(f"Resumed from epoch {checkpoint['epoch']}")
+        if "global_step" in checkpoint:
+            global_step = checkpoint["global_step"]
+        logger.info(
+            f"Resumed from epoch {checkpoint['epoch']}, global_step {global_step}"
+        )
 
         # Clean up checkpoint from memory
         del checkpoint
@@ -387,7 +393,7 @@ def main():
         logger.info(f"\nEpoch {epoch + 1}/{config.num_epochs}")
 
         # Train
-        train_loss, train_acc = train_epoch(
+        train_loss, train_acc, global_step = train_epoch(
             model,
             train_loader,
             optimizer,
@@ -397,6 +403,7 @@ def main():
             wandb_available,
             config.log_every_n_steps,
             scheduler,
+            global_step,
         )
 
         # Validate
@@ -414,7 +421,8 @@ def main():
                     "train/accuracy": train_acc,
                     "val/loss": val_loss,
                     "val/accuracy": val_acc,
-                }
+                },
+                step=global_step,
             )
 
         # Save best model
@@ -431,6 +439,7 @@ def main():
                 "val_loss": val_loss,
                 "val_acc": val_acc,
                 "best_val_acc": best_val_acc,
+                "global_step": global_step,
                 "config": vars(config),
             }
 
@@ -449,7 +458,7 @@ def main():
             )
 
             if wandb_available:
-                wandb.log({"best_val_accuracy": best_val_acc})
+                wandb.log({"best_val_accuracy": best_val_acc}, step=global_step)
 
     # Final test evaluation
     logger.info("\nFinal evaluation on test set...")
@@ -461,7 +470,8 @@ def main():
             {
                 "test/loss": test_loss,
                 "test/accuracy": test_acc,
-            }
+            },
+            step=global_step,
         )
         wandb.finish()
 
