@@ -39,6 +39,10 @@ class MultiClassDataset(Dataset):
         self.split = split
         self.logger = get_logger()
 
+        # Audio cache to avoid repeated loading
+        self._audio_cache = {}
+        self._cache_enabled = True  # Can disable for memory-constrained systems
+
         # Initialize data splitter
         if data_splitter is None:
             data_splitter = DataSplitter(config.data_dir)
@@ -163,15 +167,25 @@ class MultiClassDataset(Dataset):
             # Return zeros as fallback
             audio = np.zeros(int(self.config.max_length * self.config.sample_rate))
         else:
-            # Load audio with librosa
-            try:
-                audio, sr = librosa.load(
-                    audio_file, sr=self.config.sample_rate, mono=True
-                )
-            except Exception as e:
-                self.logger.error(f"Error loading audio {audio_file}: {e}")
-                # Return zeros as fallback
-                audio = np.zeros(int(self.config.max_length * self.config.sample_rate))
+            # Check cache first
+            cache_key = str(audio_file)
+            if self._cache_enabled and cache_key in self._audio_cache:
+                audio = self._audio_cache[cache_key].copy()
+            else:
+                # Load audio with librosa
+                try:
+                    audio, sr = librosa.load(
+                        audio_file, sr=self.config.sample_rate, mono=True
+                    )
+                    # Cache the audio if enabled
+                    if self._cache_enabled:
+                        self._audio_cache[cache_key] = audio.copy()
+                except Exception as e:
+                    self.logger.error(f"Error loading audio {audio_file}: {e}")
+                    # Return zeros as fallback
+                    audio = np.zeros(
+                        int(self.config.max_length * self.config.sample_rate)
+                    )
 
         # Ensure audio is the right length
         target_length = int(self.config.max_length * self.config.sample_rate)
@@ -224,6 +238,8 @@ def create_dataloaders(
         shuffle=True,
         num_workers=config.num_workers,
         pin_memory=True,
+        persistent_workers=True if config.num_workers > 0 else False,
+        prefetch_factor=2,
     )
 
     val_loader = DataLoader(
@@ -232,6 +248,8 @@ def create_dataloaders(
         shuffle=False,
         num_workers=config.num_workers,
         pin_memory=True,
+        persistent_workers=True if config.num_workers > 0 else False,
+        prefetch_factor=2,
     )
 
     test_loader = DataLoader(
@@ -240,6 +258,8 @@ def create_dataloaders(
         shuffle=False,
         num_workers=config.num_workers,
         pin_memory=True,
+        persistent_workers=True if config.num_workers > 0 else False,
+        prefetch_factor=2,
     )
 
     # Log dataset sizes
