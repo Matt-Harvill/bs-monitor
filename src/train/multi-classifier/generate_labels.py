@@ -16,6 +16,7 @@ LABEL_MAPPING = {
     "mb": "multiple",
     "h": "harmonic",
     "n": None,  # ignore noise labels
+    "v": None,  # ignore voice labels
 }
 
 # Class priorities (higher number = higher priority)
@@ -47,7 +48,7 @@ def parse_clean_file(clean_file_path: Path) -> list[tuple[float, float, str]]:
 
             # Convert label using mapping
             mapped_label = LABEL_MAPPING.get(label)
-            if mapped_label is not None:  # Skip noise labels
+            if mapped_label is not None:  # Skip noise labels and voice labels
                 labels.append((start_time, end_time, mapped_label))
 
     return labels

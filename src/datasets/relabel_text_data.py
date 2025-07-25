@@ -5,7 +5,7 @@ from pathlib import Path
 
 def relabel_text_file(input_file_path):
     """
-    Relabel the third column in a text file by replacing 'b' and 'v' labels with 'sb'.
+    Relabel the third column in a text file by replacing 'b' labels with 'sb'.
 
     Args:
         input_file_path (str): Path to the input text file
@@ -39,8 +39,8 @@ def relabel_text_file(input_file_path):
                 # Get the third column (index 2)
                 original_label = parts[2]
 
-                # Replace 'b' and 'v' with 'sb'
-                if original_label == "b" or original_label == "v":
+                # Replace 'b' with 'sb'
+                if original_label == "b":
                     parts[2] = "sb"
                     labels_changed += 1
                     print(f"Line {lines_processed + 1}: '{original_label}' -> 'sb'")

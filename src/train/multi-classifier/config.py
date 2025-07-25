@@ -63,12 +63,12 @@ class MultiClassifierConfig:
         """Set default class weights based on expected distribution."""
         if self.class_weights is None:
             # Based on the label distribution we observed:
-            # AS_1: 69.6% single, 19.3% none, 9.5% multiple, 1.7% harmonic
-            # 23M74M: 66% multiple, 27% none, 4% single, 2% harmonic
+            # AS_1: 5.1% single, 83.7% none, 9.5% multiple, 1.7% harmonic
+            # 23M74M: 66.6% multiple, 27.4% none, 4.1% single, 2.2% harmonic
             # Set weights inversely proportional to frequency
             self.class_weights = [
                 1.0,
-                1.0,
-                1.0,
-                3.0,
+                4.0,
+                2.6,
+                6.9,
             ]  # Give more weight to harmonic class
